@@ -14,11 +14,11 @@ const TIPOS = [
   'No entregado',
 ]
 
-const ESTADOS = {
-  nuevo: { label: 'Nuevo', color: 'bg-gray-600' },
-  en_gestion: { label: 'En gestión', color: 'bg-yellow-600' },
-  en_espera: { label: 'En espera', color: 'bg-blue-600' },
-  resuelto: { label: 'Resuelto', color: 'bg-green-600' },
+const ESTADOS: Record<string, { label: string; color: string }> = {
+  nuevo: { label: 'Nuevo', color: '#4b5563' },
+  en_gestion: { label: 'En gestión', color: '#d97706' },
+  en_espera: { label: 'En espera', color: '#2563eb' },
+  resuelto: { label: 'Resuelto', color: '#16a34a' },
 }
 
 export default function NovedadesPage() {
@@ -37,9 +37,7 @@ export default function NovedadesPage() {
   const supabase = createClient()
   const router = useRouter()
 
-  useEffect(() => {
-    fetchNovedades()
-  }, [])
+  useEffect(() => { fetchNovedades() }, [])
 
   const fetchNovedades = async () => {
     const { data } = await supabase
@@ -67,69 +65,78 @@ export default function NovedadesPage() {
     router.push('/login')
   }
 
+  const input = {
+    width: '100%',
+    background: '#1f2937',
+    color: '#fff',
+    border: '1px solid #374151',
+    borderRadius: '0.5rem',
+    padding: '0.5rem 0.75rem',
+    fontSize: '0.875rem',
+    outline: 'none',
+  }
+
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-      <div className="max-w-6xl mx-auto px-4 py-6">
+    <div style={{ minHeight: '100vh', background: '#030712', color: '#fff', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '1.5rem 1rem' }}>
+
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Novedades</h1>
-          <div className="flex gap-3">
-            <button onClick={() => setShowForm(true)} className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg font-semibold transition">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Novedades</h1>
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button onClick={() => setShowForm(true)} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', fontWeight: 600, cursor: 'pointer' }}>
               + Nueva novedad
             </button>
-            <button onClick={handleLogout} className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition">
+            <button onClick={handleLogout} style={{ background: '#374151', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
               Salir
             </button>
           </div>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
           {Object.entries(ESTADOS).map(([key, val]) => (
-            <div key={key} className="bg-gray-900 rounded-xl p-4">
-              <p className="text-gray-400 text-sm">{val.label}</p>
-              <p className="text-2xl font-bold mt-1">{novedades.filter(n => n.estado === key).length}</p>
+            <div key={key} style={{ background: '#111827', borderRadius: '0.75rem', padding: '1rem', borderLeft: `4px solid ${val.color}` }}>
+              <p style={{ color: '#9ca3af', fontSize: '0.875rem' }}>{val.label}</p>
+              <p style={{ fontSize: '1.75rem', fontWeight: 700, marginTop: '0.25rem' }}>
+                {novedades.filter(n => n.estado === key).length}
+              </p>
             </div>
           ))}
         </div>
 
         {/* Tabla */}
-        <div className="bg-gray-900 rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-800 text-gray-400">
-              <tr>
-                <th className="text-left px-4 py-3">Orden</th>
-                <th className="text-left px-4 py-3">Cliente</th>
-                <th className="text-left px-4 py-3">Tipo</th>
-                <th className="text-left px-4 py-3">Estado</th>
-                <th className="text-left px-4 py-3">Costo</th>
-                <th className="text-left px-4 py-3">Fecha</th>
-                <th className="text-left px-4 py-3">Acciones</th>
+        <div style={{ background: '#111827', borderRadius: '0.75rem', overflow: 'hidden' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+            <thead>
+              <tr style={{ background: '#1f2937', color: '#9ca3af' }}>
+                {['Orden', 'Cliente', 'Tipo', 'Canal', 'Responsabilidad', 'Estado', 'Costo', 'Fecha', 'Cambiar estado'].map(h => (
+                  <th key={h} style={{ textAlign: 'left', padding: '0.75rem 1rem', fontWeight: 500 }}>{h}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="text-center py-8 text-gray-500">Cargando...</td></tr>
+                <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>Cargando...</td></tr>
               ) : novedades.length === 0 ? (
-                <tr><td colSpan={7} className="text-center py-8 text-gray-500">No hay novedades</td></tr>
+                <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>No hay novedades</td></tr>
               ) : novedades.map(n => (
-                <tr key={n.id} className="border-t border-gray-800 hover:bg-gray-800/50">
-                  <td className="px-4 py-3 font-mono">{n.numero_orden || '-'}</td>
-                  <td className="px-4 py-3">{n.cliente || '-'}</td>
-                  <td className="px-4 py-3">{n.tipo}</td>
-                  <td className="px-4 py-3">
-                    <span className={`${ESTADOS[n.estado as keyof typeof ESTADOS]?.color} px-2 py-1 rounded-full text-xs`}>
-                      {ESTADOS[n.estado as keyof typeof ESTADOS]?.label}
+                <tr key={n.id} style={{ borderTop: '1px solid #1f2937' }}>
+                  <td style={{ padding: '0.75rem 1rem', fontFamily: 'monospace' }}>{n.numero_orden || '-'}</td>
+                  <td style={{ padding: '0.75rem 1rem' }}>{n.cliente || '-'}</td>
+                  <td style={{ padding: '0.75rem 1rem' }}>{n.tipo}</td>
+                  <td style={{ padding: '0.75rem 1rem', textTransform: 'capitalize' }}>{n.canal}</td>
+                  <td style={{ padding: '0.75rem 1rem', textTransform: 'capitalize' }}>{n.responsabilidad}</td>
+                  <td style={{ padding: '0.75rem 1rem' }}>
+                    <span style={{ background: ESTADOS[n.estado]?.color, padding: '0.2rem 0.6rem', borderRadius: '999px', fontSize: '0.75rem' }}>
+                      {ESTADOS[n.estado]?.label}
                     </span>
                   </td>
-                  <td className="px-4 py-3">${n.costo_reproceso?.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-gray-400">{new Date(n.created_at).toLocaleDateString('es-CO')}</td>
-                  <td className="px-4 py-3">
-                    <select
-                      value={n.estado}
-                      onChange={e => handleEstado(n.id, e.target.value)}
-                      className="bg-gray-700 text-white rounded px-2 py-1 text-xs"
-                    >
+                  <td style={{ padding: '0.75rem 1rem' }}>${n.costo_reproceso?.toLocaleString('es-CO')}</td>
+                  <td style={{ padding: '0.75rem 1rem', color: '#9ca3af' }}>{new Date(n.created_at).toLocaleDateString('es-CO')}</td>
+                  <td style={{ padding: '0.75rem 1rem' }}>
+                    <select value={n.estado} onChange={e => handleEstado(n.id, e.target.value)}
+                      style={{ background: '#374151', color: '#fff', border: 'none', borderRadius: '0.375rem', padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
                       {Object.entries(ESTADOS).map(([key, val]) => (
                         <option key={key} value={key}>{val.label}</option>
                       ))}
@@ -142,33 +149,39 @@ export default function NovedadesPage() {
         </div>
       </div>
 
-      {/* Modal nueva novedad */}
+      {/* Modal */}
       {showForm && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-2xl p-6 w-full max-w-lg shadow-xl">
-            <h2 className="text-lg font-bold mb-4">Nueva novedad</h2>
-            <div className="space-y-3">
-              <input placeholder="Número de orden" value={form.numero_orden} onChange={e => setForm({...form, numero_orden: e.target.value})} className="w-full bg-gray-800 rounded-lg px-4 py-2 text-sm outline-none" />
-              <input placeholder="Cliente" value={form.cliente} onChange={e => setForm({...form, cliente: e.target.value})} className="w-full bg-gray-800 rounded-lg px-4 py-2 text-sm outline-none" />
-              <select value={form.tipo} onChange={e => setForm({...form, tipo: e.target.value})} className="w-full bg-gray-800 rounded-lg px-4 py-2 text-sm outline-none">
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div style={{ background: '#111827', borderRadius: '1rem', padding: '1.5rem', width: '100%', maxWidth: '480px', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+            <h2 style={{ fontSize: '1.125rem', fontWeight: 700, marginBottom: '1rem' }}>Nueva novedad</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <input placeholder="Número de orden" value={form.numero_orden} onChange={e => setForm({...form, numero_orden: e.target.value})} style={input} />
+              <input placeholder="Cliente" value={form.cliente} onChange={e => setForm({...form, cliente: e.target.value})} style={input} />
+              <select value={form.tipo} onChange={e => setForm({...form, tipo: e.target.value})} style={input}>
                 {TIPOS.map(t => <option key={t}>{t}</option>)}
               </select>
-              <textarea placeholder="Descripción" value={form.descripcion} onChange={e => setForm({...form, descripcion: e.target.value})} className="w-full bg-gray-800 rounded-lg px-4 py-2 text-sm outline-none h-20 resize-none" />
-              <select value={form.canal} onChange={e => setForm({...form, canal: e.target.value})} className="w-full bg-gray-800 rounded-lg px-4 py-2 text-sm outline-none">
+              <textarea placeholder="Descripción del caso" value={form.descripcion} onChange={e => setForm({...form, descripcion: e.target.value})}
+                style={{ ...input, height: '80px', resize: 'none' }} />
+              <select value={form.canal} onChange={e => setForm({...form, canal: e.target.value})} style={input}>
                 <option value="whatsapp">WhatsApp</option>
                 <option value="llamada">Llamada</option>
                 <option value="instagram">Instagram</option>
                 <option value="correo">Correo</option>
               </select>
-              <select value={form.responsabilidad} onChange={e => setForm({...form, responsabilidad: e.target.value})} className="w-full bg-gray-800 rounded-lg px-4 py-2 text-sm outline-none">
+              <select value={form.responsabilidad} onChange={e => setForm({...form, responsabilidad: e.target.value})} style={input}>
                 <option value="nuestra">Responsabilidad nuestra</option>
                 <option value="cliente">Responsabilidad del cliente</option>
               </select>
-              <input type="number" placeholder="Costo del reproceso ($)" value={form.costo_reproceso} onChange={e => setForm({...form, costo_reproceso: Number(e.target.value)})} className="w-full bg-gray-800 rounded-lg px-4 py-2 text-sm outline-none" />
+              <input type="number" placeholder="Costo del reproceso ($)" value={form.costo_reproceso}
+                onChange={e => setForm({...form, costo_reproceso: Number(e.target.value)})} style={input} />
             </div>
-            <div className="flex gap-3 mt-5">
-              <button onClick={handleSubmit} className="flex-1 bg-purple-600 hover:bg-purple-700 py-2 rounded-lg font-semibold transition">Guardar</button>
-              <button onClick={() => setShowForm(false)} className="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded-lg transition">Cancelar</button>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1.25rem' }}>
+              <button onClick={handleSubmit} style={{ flex: 1, background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.625rem', fontWeight: 600, cursor: 'pointer' }}>
+                Guardar
+              </button>
+              <button onClick={() => setShowForm(false)} style={{ flex: 1, background: '#374151', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.625rem', cursor: 'pointer' }}>
+                Cancelar
+              </button>
             </div>
           </div>
         </div>
