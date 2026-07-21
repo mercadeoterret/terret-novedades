@@ -121,7 +121,7 @@ export default function NovedadesPage() {
               ) : novedades.length === 0 ? (
                 <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>No hay novedades</td></tr>
               ) : novedades.map(n => (
-                <tr key={n.id} style={{ borderTop: '1px solid #1f2937' }}>
+                <tr key={n.id} onClick={() => router.push(`/novedades/${n.id}`)} style={{ borderTop: '1px solid #1f2937', cursor: 'pointer' }}>
                   <td style={{ padding: '0.75rem 1rem', fontFamily: 'monospace' }}>{n.numero_orden || '-'}</td>
                   <td style={{ padding: '0.75rem 1rem' }}>{n.cliente || '-'}</td>
                   <td style={{ padding: '0.75rem 1rem' }}>{n.tipo}</td>
