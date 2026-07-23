@@ -25,6 +25,9 @@ export default function NovedadesPage() {
   const [novedades, setNovedades] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [filtroEstado, setFiltroEstado] = useState('todos')
+  const [filtroResponsabilidad, setFiltroResponsabilidad] = useState('todos')
+  const [busqueda, setBusqueda] = useState('')
   const [form, setForm] = useState({
     numero_orden: '',
     cliente: '',
@@ -43,10 +46,19 @@ export default function NovedadesPage() {
     const { data } = await supabase
       .from('novedades')
       .select('*')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
     setNovedades(data || [])
     setLoading(false)
   }
+
+  const novedadesFiltradas = novedades
+    .filter(n => filtroEstado === 'todos' || n.estado === filtroEstado)
+    .filter(n => filtroResponsabilidad === 'todos' || n.responsabilidad === filtroResponsabilidad)
+    .filter(n => !busqueda ||
+      n.numero_orden?.toLowerCase().includes(busqueda.toLowerCase()) ||
+      n.cliente?.toLowerCase().includes(busqueda.toLowerCase())
+    )
 
   const handleSubmit = async () => {
     await supabase.from('novedades').insert([{ ...form, estado: 'nuevo' }])
@@ -76,6 +88,16 @@ export default function NovedadesPage() {
     outline: 'none',
   }
 
+  const selectStyle = {
+    background: '#111827',
+    color: '#fff',
+    border: '1px solid #374151',
+    borderRadius: '0.5rem',
+    padding: '0.5rem 0.75rem',
+    fontSize: '0.875rem',
+    outline: 'none',
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#030712', color: '#fff', fontFamily: 'Arial, sans-serif' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '1.5rem 1rem' }}>
@@ -85,17 +107,17 @@ export default function NovedadesPage() {
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Novedades</h1>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             <button onClick={() => router.push('/reportes')} style={{ background: '#1f2937', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-  Reportes
-</button>
+              Reportes
+            </button>
+            <button onClick={() => router.push('/admin')} style={{ background: '#1f2937', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+              Admin
+            </button>
             <button onClick={() => setShowForm(true)} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', fontWeight: 600, cursor: 'pointer' }}>
               + Nueva novedad
             </button>
             <button onClick={handleLogout} style={{ background: '#374151', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
               Salir
             </button>
-            <button onClick={() => router.push('/admin')} style={{ background: '#1f2937', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-  Admin
-</button>
           </div>
         </div>
 
@@ -111,6 +133,28 @@ export default function NovedadesPage() {
           ))}
         </div>
 
+        {/* Filtros */}
+        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+          <input
+            placeholder="Buscar por orden o cliente..."
+            value={busqueda}
+            onChange={e => setBusqueda(e.target.value)}
+            style={{ flex: 1, minWidth: '200px', background: '#111827', color: '#fff', border: '1px solid #374151', borderRadius: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.875rem', outline: 'none' }}
+          />
+          <select value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)} style={selectStyle}>
+            <option value="todos">Todos los estados</option>
+            <option value="nuevo">Nuevo</option>
+            <option value="en_gestion">En gestión</option>
+            <option value="en_espera">En espera</option>
+            <option value="resuelto">Resuelto</option>
+          </select>
+          <select value={filtroResponsabilidad} onChange={e => setFiltroResponsabilidad(e.target.value)} style={selectStyle}>
+            <option value="todos">Toda responsabilidad</option>
+            <option value="nuestra">Nuestra</option>
+            <option value="cliente">Cliente</option>
+          </select>
+        </div>
+
         {/* Tabla */}
         <div style={{ background: '#111827', borderRadius: '0.75rem', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
@@ -124,9 +168,9 @@ export default function NovedadesPage() {
             <tbody>
               {loading ? (
                 <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>Cargando...</td></tr>
-              ) : novedades.length === 0 ? (
+              ) : novedadesFiltradas.length === 0 ? (
                 <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>No hay novedades</td></tr>
-              ) : novedades.map(n => (
+              ) : novedadesFiltradas.map(n => (
                 <tr key={n.id} onClick={() => router.push(`/novedades/${n.id}`)} style={{ borderTop: '1px solid #1f2937', cursor: 'pointer' }}>
                   <td style={{ padding: '0.75rem 1rem', fontFamily: 'monospace' }}>{n.numero_orden || '-'}</td>
                   <td style={{ padding: '0.75rem 1rem' }}>{n.cliente || '-'}</td>
@@ -140,7 +184,7 @@ export default function NovedadesPage() {
                   </td>
                   <td style={{ padding: '0.75rem 1rem' }}>${n.costo_reproceso?.toLocaleString('es-CO')}</td>
                   <td style={{ padding: '0.75rem 1rem', color: '#9ca3af' }}>{new Date(n.created_at).toLocaleDateString('es-CO')}</td>
-                  <td style={{ padding: '0.75rem 1rem' }}>
+                  <td style={{ padding: '0.75rem 1rem' }} onClick={e => e.stopPropagation()}>
                     <select value={n.estado} onChange={e => handleEstado(n.id, e.target.value)}
                       style={{ background: '#374151', color: '#fff', border: 'none', borderRadius: '0.375rem', padding: '0.25rem 0.5rem', fontSize: '0.75rem', cursor: 'pointer' }}>
                       {Object.entries(ESTADOS).map(([key, val]) => (
