@@ -137,7 +137,7 @@ export default function NovedadesPage() {
         </div>
 
         {/* Stats */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: isMobile ? '0.5rem' : '1rem', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? '0.5rem' : '1rem', marginBottom: '1.25rem' }}>
           {Object.entries(ESTADOS).map(([key, val]) => (
             <div key={key} onClick={() => setFiltroEstado(filtroEstado === key ? 'todos' : key)}
               style={{ background: '#111827', borderRadius: '0.75rem', padding: isMobile ? '0.75rem' : '1rem', borderLeft: `4px solid ${val.color}`, cursor: 'pointer', opacity: filtroEstado !== 'todos' && filtroEstado !== key ? 0.4 : 1 }}>
