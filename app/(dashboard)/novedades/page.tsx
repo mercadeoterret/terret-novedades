@@ -84,12 +84,18 @@ export default function NovedadesPage() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontSize: '1.5rem', fontWeight: 700 }}>Novedades</h1>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <button onClick={() => router.push('/reportes')} style={{ background: '#1f2937', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+  Reportes
+</button>
             <button onClick={() => setShowForm(true)} style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', fontWeight: 600, cursor: 'pointer' }}>
               + Nueva novedad
             </button>
             <button onClick={handleLogout} style={{ background: '#374151', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
               Salir
             </button>
+            <button onClick={() => router.push('/admin')} style={{ background: '#1f2937', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+  Admin
+</button>
           </div>
         </div>
 
