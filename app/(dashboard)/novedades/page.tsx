@@ -108,8 +108,8 @@ export default function NovedadesPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#030712', color: '#fff', fontFamily: 'Arial, sans-serif' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1rem' }}>
+    <div style={{ minHeight: '100vh', background: '#030712', color: '#fff', fontFamily: 'Arial, sans-serif', overflowX: 'hidden' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: isMobile ? '1rem' : '1.5rem 1rem', overflowX: 'hidden' }}>
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
