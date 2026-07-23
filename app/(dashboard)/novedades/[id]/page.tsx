@@ -60,14 +60,9 @@ export default function NovedadDetalle() {
     if (!nota.trim()) return
     const contenido = nota
     setNota('')
-
     const { data: nuevo } = await supabase.from('novedad_historial').insert({
-      novedad_id: id,
-      usuario_id: perfil.id,
-      tipo: 'nota',
-      contenido,
+      novedad_id: id, usuario_id: perfil.id, tipo: 'nota', contenido,
     }).select('*, usuario:profiles(nombre)').single()
-
     if (nuevo) setHistorial(prev => [...prev, nuevo])
   }
 
@@ -75,40 +70,24 @@ export default function NovedadDetalle() {
     if (estado === novedad.estado) return
     const anterior = novedad.estado
     setNovedad((prev: any) => ({ ...prev, estado }))
-
     await supabase.from('novedades').update({ estado, updated_at: new Date().toISOString() }).eq('id', id)
-
     const { data: entrada } = await supabase.from('novedad_historial').insert({
-      novedad_id: id,
-      usuario_id: perfil.id,
-      tipo: 'estado',
+      novedad_id: id, usuario_id: perfil.id, tipo: 'estado',
       contenido: `Cambió el estado de "${ESTADOS[anterior]?.label}" a "${ESTADOS[estado]?.label}"`,
-      estado_anterior: anterior,
-      estado_nuevo: estado,
+      estado_anterior: anterior, estado_nuevo: estado,
     }).select('*, usuario:profiles(nombre)').single()
-
     if (entrada) setHistorial(prev => [...prev, entrada])
   }
 
   const guardarEdicion = async () => {
     await supabase.from('novedades').update({
-      numero_orden: form.numero_orden,
-      cliente: form.cliente,
-      tipo: form.tipo,
-      descripcion: form.descripcion,
-      canal: form.canal,
-      responsabilidad: form.responsabilidad,
-      costo_reproceso: form.costo_reproceso,
-      updated_at: new Date().toISOString(),
+      numero_orden: form.numero_orden, cliente: form.cliente, tipo: form.tipo,
+      descripcion: form.descripcion, canal: form.canal, responsabilidad: form.responsabilidad,
+      costo_reproceso: form.costo_reproceso, updated_at: new Date().toISOString(),
     }).eq('id', id)
-
     const { data: entrada } = await supabase.from('novedad_historial').insert({
-      novedad_id: id,
-      usuario_id: perfil.id,
-      tipo: 'nota',
-      contenido: 'Editó los datos de la novedad',
+      novedad_id: id, usuario_id: perfil.id, tipo: 'nota', contenido: 'Editó los datos de la novedad',
     }).select('*, usuario:profiles(nombre)').single()
-
     setNovedad((prev: any) => ({ ...prev, ...form }))
     if (entrada) setHistorial(prev => [...prev, entrada])
     setEditando(false)
@@ -124,29 +103,17 @@ export default function NovedadDetalle() {
     const file = e.target.files?.[0]
     if (!file) return
     setSubiendoArchivo(true)
-
     const ext = file.name.split('.').pop()
     const path = `${Date.now()}.${ext}`
-
     const { error } = await supabase.storage.from('novedades-archivos').upload(path, file)
-
     if (!error) {
       const { data: { publicUrl } } = supabase.storage.from('novedades-archivos').getPublicUrl(path)
-
       const { data: archivoNuevo } = await supabase.from('novedad_archivos').insert({
-        novedad_id: id,
-        usuario_id: perfil.id,
-        nombre: file.name,
-        url: publicUrl,
+        novedad_id: id, usuario_id: perfil.id, nombre: file.name, url: publicUrl,
       }).select('*').single()
-
       const { data: entrada } = await supabase.from('novedad_historial').insert({
-        novedad_id: id,
-        usuario_id: perfil.id,
-        tipo: 'archivo',
-        contenido: `${file.name}||${publicUrl}`,
+        novedad_id: id, usuario_id: perfil.id, tipo: 'archivo', contenido: `${file.name}||${publicUrl}`,
       }).select('*, usuario:profiles(nombre)').single()
-
       if (archivoNuevo) setArchivos(prev => [archivoNuevo, ...prev])
       if (entrada) setHistorial(prev => [...prev, entrada])
     }
@@ -156,93 +123,66 @@ export default function NovedadDetalle() {
 
   const esImagen = (nombre: string) => /\.(jpg|jpeg|png|gif|webp)$/i.test(nombre)
 
-  const input = {
-    width: '100%',
-    background: '#1f2937',
-    color: '#fff',
-    border: '1px solid #374151',
-    borderRadius: '0.5rem',
-    padding: '0.5rem 0.75rem',
-    fontSize: '0.875rem',
-    outline: 'none',
-  }
-
-  if (loading) return (
-    <div style={{ minHeight: '100vh', background: '#030712', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      Cargando...
-    </div>
-  )
-
-  if (!novedad) return (
-    <div style={{ minHeight: '100vh', background: '#030712', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      Novedad no encontrada
-    </div>
-  )
+  if (loading) return <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Cargando...</div>
+  if (!novedad) return <div className="page" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Novedad no encontrada</div>
 
   return (
-    <div style={{ minHeight: '100vh', background: '#030712', color: '#fff', fontFamily: 'Arial, sans-serif' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '1.5rem 1rem' }}>
+    <div className="page">
+      <div className="container">
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
-          <button onClick={() => router.push('/novedades')}
-            style={{ background: '#1f2937', border: 'none', color: '#9ca3af', borderRadius: '0.5rem', padding: '0.5rem 0.75rem', cursor: 'pointer', fontSize: '0.875rem' }}>
-            ← Volver
-          </button>
-          <h1 style={{ fontSize: '1.25rem', fontWeight: 700, flex: 1 }}>
-            Novedad {novedad.numero_orden ? `#${novedad.numero_orden}` : `ID ${String(id).slice(0, 8)}`}
-          </h1>
-          <span style={{ background: ESTADOS[novedad.estado]?.color, padding: '0.25rem 0.75rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 600 }}>
-            {ESTADOS[novedad.estado]?.label}
-          </span>
-          {perfil?.rol === 'admin' && (
-            <button onClick={eliminar}
-              style={{ background: '#7f1d1d', border: 'none', color: '#fca5a5', borderRadius: '0.5rem', padding: '0.5rem 0.75rem', cursor: 'pointer', fontSize: '0.875rem' }}>
-              Eliminar
-            </button>
-          )}
+        <div className="page-header" style={{ marginBottom: '1.25rem' }}>
+          <div className="btn-group">
+            <button className="btn btn-back" onClick={() => router.push('/novedades')}>← Volver</button>
+            <h1 style={{ fontSize: '1.1rem', fontWeight: 700 }}>
+              {novedad.numero_orden ? `Novedad #${novedad.numero_orden}` : `Novedad ${String(id).slice(0, 8)}`}
+            </h1>
+          </div>
+          <div className="btn-group">
+            <span className="badge" style={{ background: ESTADOS[novedad.estado]?.color }}>
+              {ESTADOS[novedad.estado]?.label}
+            </span>
+            {perfil?.rol === 'admin' && (
+              <button className="btn btn-danger" onClick={eliminar}>Eliminar</button>
+            )}
+          </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+        {/* Grid — 2 cols desktop, 1 col mobile */}
+        <div className="detail-grid">
 
           {/* Columna izquierda */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div className="detail-info">
 
             {/* Info */}
-            <div style={{ background: '#111827', borderRadius: '0.75rem', padding: '1.25rem' }}>
+            <div className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h2 style={{ fontWeight: 600, fontSize: '0.9rem', color: '#9ca3af' }}>INFORMACIÓN</h2>
-                <button onClick={() => setEditando(!editando)}
-                  style={{ background: editando ? '#374151' : '#1f2937', border: 'none', color: '#d1d5db', borderRadius: '0.375rem', padding: '0.25rem 0.625rem', cursor: 'pointer', fontSize: '0.75rem' }}>
+                <button className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.25rem 0.625rem' }} onClick={() => setEditando(!editando)}>
                   {editando ? 'Cancelar' : 'Editar'}
                 </button>
               </div>
 
               {editando ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.625rem' }}>
-                  <input placeholder="Número de orden" value={form.numero_orden || ''} onChange={e => setForm({...form, numero_orden: e.target.value})} style={input} />
-                  <input placeholder="Cliente" value={form.cliente || ''} onChange={e => setForm({...form, cliente: e.target.value})} style={input} />
-                  <select value={form.tipo} onChange={e => setForm({...form, tipo: e.target.value})} style={input}>
+                <div className="modal-form">
+                  <input className="input" placeholder="Número de orden" value={form.numero_orden || ''} onChange={e => setForm({...form, numero_orden: e.target.value})} />
+                  <input className="input" placeholder="Cliente" value={form.cliente || ''} onChange={e => setForm({...form, cliente: e.target.value})} />
+                  <select className="input" value={form.tipo} onChange={e => setForm({...form, tipo: e.target.value})}>
                     {TIPOS.map(t => <option key={t}>{t}</option>)}
                   </select>
-                  <textarea value={form.descripcion || ''} onChange={e => setForm({...form, descripcion: e.target.value})}
-                    style={{ ...input, height: '70px', resize: 'none' }} placeholder="Descripción" />
-                  <select value={form.canal} onChange={e => setForm({...form, canal: e.target.value})} style={input}>
+                  <textarea className="textarea" value={form.descripcion || ''} onChange={e => setForm({...form, descripcion: e.target.value})} placeholder="Descripción" style={{ height: '70px' }} />
+                  <select className="input" value={form.canal} onChange={e => setForm({...form, canal: e.target.value})}>
                     <option value="whatsapp">WhatsApp</option>
                     <option value="llamada">Llamada</option>
                     <option value="instagram">Instagram</option>
                     <option value="correo">Correo</option>
                   </select>
-                  <select value={form.responsabilidad} onChange={e => setForm({...form, responsabilidad: e.target.value})} style={input}>
+                  <select className="input" value={form.responsabilidad} onChange={e => setForm({...form, responsabilidad: e.target.value})}>
                     <option value="nuestra">Responsabilidad nuestra</option>
                     <option value="cliente">Responsabilidad del cliente</option>
                   </select>
-                  <input type="number" placeholder="Costo reproceso" value={form.costo_reproceso || 0}
-                    onChange={e => setForm({...form, costo_reproceso: Number(e.target.value)})} style={input} />
-                  <button onClick={guardarEdicion}
-                    style={{ background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '0.5rem', padding: '0.5rem', cursor: 'pointer', fontWeight: 600 }}>
-                    Guardar cambios
-                  </button>
+                  <input className="input" type="number" placeholder="Costo reproceso" value={form.costo_reproceso || 0} onChange={e => setForm({...form, costo_reproceso: Number(e.target.value)})} />
+                  <button className="btn btn-primary" style={{ width: '100%', padding: '0.5rem' }} onClick={guardarEdicion}>Guardar cambios</button>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.875rem' }}>
@@ -253,11 +193,11 @@ export default function NovedadDetalle() {
                     ['Canal', novedad.canal],
                     ['Responsabilidad', novedad.responsabilidad],
                     ['Costo reproceso', `$${Number(novedad.costo_reproceso || 0).toLocaleString('es-CO')}`],
-                    ['Fecha creación', new Date(novedad.created_at).toLocaleDateString('es-CO')],
+                    ['Fecha', new Date(novedad.created_at).toLocaleDateString('es-CO')],
                   ].map(([label, value]) => (
-                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span style={{ color: '#6b7280' }}>{label}</span>
-                      <span style={{ fontWeight: 500, textAlign: 'right', maxWidth: '60%', textTransform: 'capitalize' }}>{value}</span>
+                    <div key={label} className="detail-row">
+                      <span className="detail-key">{label}</span>
+                      <span className="detail-val">{value}</span>
                     </div>
                   ))}
                   {novedad.descripcion && (
@@ -271,15 +211,14 @@ export default function NovedadDetalle() {
               {/* Cambiar estado */}
               <div style={{ marginTop: '1.25rem', borderTop: '1px solid #1f2937', paddingTop: '1rem' }}>
                 <p style={{ fontSize: '0.75rem', color: '#6b7280', marginBottom: '0.5rem' }}>CAMBIAR ESTADO</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.375rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.375rem' }}>
                   {Object.entries(ESTADOS).map(([key, val]) => (
                     <button key={key} onClick={() => cambiarEstado(key)}
                       style={{
                         background: novedad.estado === key ? val.color : '#1f2937',
                         border: `1px solid ${novedad.estado === key ? val.color : '#374151'}`,
-                        color: '#fff', borderRadius: '0.375rem', padding: '0.375rem 0.75rem',
-                        cursor: 'pointer', fontSize: '0.8rem', textAlign: 'left',
-                        fontWeight: novedad.estado === key ? 600 : 400,
+                        color: '#fff', borderRadius: '0.375rem', padding: '0.5rem 0.75rem',
+                        cursor: 'pointer', fontSize: '0.8rem', fontWeight: novedad.estado === key ? 600 : 400,
                       }}>
                       {val.label}
                     </button>
@@ -289,17 +228,15 @@ export default function NovedadDetalle() {
             </div>
 
             {/* Archivos */}
-            <div style={{ background: '#111827', borderRadius: '0.75rem', padding: '1.25rem' }}>
+            <div className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                 <h2 style={{ fontWeight: 600, fontSize: '0.9rem', color: '#9ca3af' }}>ARCHIVOS ({archivos.length})</h2>
-                <button onClick={() => fileInputRef.current?.click()}
-                  disabled={subiendoArchivo}
-                  style={{ background: '#1f2937', border: 'none', color: '#d1d5db', borderRadius: '0.375rem', padding: '0.25rem 0.625rem', cursor: 'pointer', fontSize: '0.75rem' }}>
+                <button className="btn btn-secondary" style={{ fontSize: '0.75rem', padding: '0.25rem 0.625rem' }}
+                  onClick={() => fileInputRef.current?.click()} disabled={subiendoArchivo}>
                   {subiendoArchivo ? 'Subiendo...' : '+ Adjuntar'}
                 </button>
                 <input ref={fileInputRef} type="file" style={{ display: 'none' }} onChange={subirArchivo} />
               </div>
-
               {archivos.length === 0 ? (
                 <p style={{ color: '#4b5563', fontSize: '0.875rem' }}>Sin archivos adjuntos</p>
               ) : (
@@ -310,17 +247,13 @@ export default function NovedadDetalle() {
                       {esImagen(a.nombre) ? (
                         <img src={a.url} alt={a.nombre} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '0.375rem' }} />
                       ) : (
-                        <div style={{ width: '40px', height: '40px', background: '#374151', borderRadius: '0.375rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', color: '#9ca3af' }}>
-                          DOC
-                        </div>
+                        <div style={{ width: '40px', height: '40px', background: '#374151', borderRadius: '0.375rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', color: '#9ca3af' }}>DOC</div>
                       )}
                       <div style={{ flex: 1, overflow: 'hidden' }}>
                         <p style={{ fontSize: '0.8rem', fontWeight: 500, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.nombre}</p>
                         <p style={{ fontSize: '0.7rem', color: '#6b7280', margin: 0 }}>{new Date(a.created_at).toLocaleDateString('es-CO')}</p>
                       </div>
-                      <span style={{ background: '#374151', color: '#d1d5db', borderRadius: '0.375rem', padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>
-                        Ver →
-                      </span>
+                      <span style={{ background: '#374151', color: '#d1d5db', borderRadius: '0.375rem', padding: '0.25rem 0.5rem', fontSize: '0.75rem' }}>Ver →</span>
                     </a>
                   ))}
                 </div>
@@ -329,27 +262,23 @@ export default function NovedadDetalle() {
           </div>
 
           {/* Timeline */}
-          <div style={{ background: '#111827', borderRadius: '0.75rem', padding: '1.25rem', display: 'flex', flexDirection: 'column', height: '700px' }}>
+          <div className="activity-panel">
             <h2 style={{ fontWeight: 600, fontSize: '0.9rem', color: '#9ca3af', marginBottom: '1rem' }}>ACTIVIDAD</h2>
-
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingRight: '0.25rem' }}>
+            <div className="timeline">
               {historial.length === 0 && (
-                <p style={{ color: '#4b5563', fontSize: '0.875rem', textAlign: 'center', marginTop: '2rem' }}>
-                  Sin actividad aún
-                </p>
+                <p style={{ color: '#4b5563', fontSize: '0.875rem', textAlign: 'center', marginTop: '2rem' }}>Sin actividad aún</p>
               )}
               {historial.map(h => (
                 <div key={h.id} style={{
                   background: h.tipo === 'estado' ? '#1f2937' : h.tipo === 'archivo' ? '#1a2e1a' : '#1e1b4b',
-                  borderRadius: '0.625rem',
-                  padding: '0.625rem 0.875rem',
+                  borderRadius: '0.625rem', padding: '0.625rem 0.875rem',
                   borderLeft: `3px solid ${h.tipo === 'estado' ? '#374151' : h.tipo === 'archivo' ? '#16a34a' : '#7c3aed'}`,
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: h.tipo === 'estado' ? '#9ca3af' : h.tipo === 'archivo' ? '#4ade80' : '#a78bfa' }}>
+                  <div className="timeline-header">
+                    <span className="timeline-author" style={{ color: h.tipo === 'estado' ? '#9ca3af' : h.tipo === 'archivo' ? '#4ade80' : '#a78bfa' }}>
                       {h.usuario?.nombre || 'Sistema'}
                     </span>
-                    <span style={{ fontSize: '0.7rem', color: '#4b5563' }}>
+                    <span className="timeline-time">
                       {new Date(h.created_at).toLocaleString('es-CO', { dateStyle: 'short', timeStyle: 'short' })}
                     </span>
                   </div>
@@ -359,7 +288,7 @@ export default function NovedadDetalle() {
                       📎 {h.contenido.split('||')[0]}
                     </a>
                   ) : (
-                    <p style={{ fontSize: '0.875rem', color: h.tipo === 'estado' ? '#6b7280' : '#e5e7eb', margin: 0 }}>
+                    <p className="timeline-content" style={{ color: h.tipo === 'estado' ? '#6b7280' : '#e5e7eb' }}>
                       {h.contenido}
                     </p>
                   )}
@@ -367,19 +296,15 @@ export default function NovedadDetalle() {
               ))}
               <div ref={bottomRef} />
             </div>
-
-            <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem' }}>
-              <textarea
+            <div className="timeline-input">
+              <textarea className="textarea"
                 value={nota}
                 onChange={e => setNota(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); agregarNota() } }}
                 placeholder="Escribe una nota... (Enter para enviar)"
-                style={{ flex: 1, background: '#1f2937', color: '#fff', border: '1px solid #374151', borderRadius: '0.5rem', padding: '0.5rem 0.75rem', fontSize: '0.875rem', outline: 'none', resize: 'none', height: '60px' }}
+                style={{ flex: 1, height: '60px' }}
               />
-              <button onClick={agregarNota}
-                style={{ background: '#7c3aed', border: 'none', color: '#fff', borderRadius: '0.5rem', padding: '0 1rem', cursor: 'pointer', fontWeight: 600 }}>
-                →
-              </button>
+              <button className="btn btn-primary" style={{ padding: '0 1rem' }} onClick={agregarNota}>→</button>
             </div>
           </div>
         </div>
