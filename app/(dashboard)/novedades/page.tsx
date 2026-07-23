@@ -13,9 +13,11 @@ const ESTADOS: Record<string, { label: string; color: string }> = {
 
 export default function NovedadesPage() {
   const [novedades, setNovedades] = useState<any[]>([])
+  const [resueltas, setResueltas] = useState<any[]>([])
   const [tipos, setTipos] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
+  const [verResueltas, setVerResueltas] = useState(false)
   const [filtroEstado, setFiltroEstado] = useState('todos')
   const [filtroResponsabilidad, setFiltroResponsabilidad] = useState('todos')
   const [busqueda, setBusqueda] = useState('')
@@ -30,17 +32,21 @@ export default function NovedadesPage() {
   useEffect(() => { fetchTodo() }, [])
 
   const fetchTodo = async () => {
-    const [{ data: n }, { data: t }] = await Promise.all([
-      supabase.from('novedades').select('*').is('deleted_at', null).order('created_at', { ascending: false }),
+    const [{ data: n }, { data: r }, { data: t }] = await Promise.all([
+      supabase.from('novedades').select('*').is('deleted_at', null).neq('estado', 'resuelto').order('created_at', { ascending: false }),
+      supabase.from('novedades').select('*').is('deleted_at', null).eq('estado', 'resuelto').order('updated_at', { ascending: false }),
       supabase.from('tipos_novedad').select('*').eq('activo', true).order('orden', { ascending: true }),
     ])
     setNovedades(n || [])
+    setResueltas(r || [])
     setTipos(t || [])
     if (t && t.length > 0) setForm(prev => ({ ...prev, tipo: t[0].nombre }))
     setLoading(false)
   }
 
-  const novedadesFiltradas = novedades
+  const listaActiva = verResueltas ? resueltas : novedades
+
+  const novedadesFiltradas = listaActiva
     .filter(n => filtroEstado === 'todos' || n.estado === filtroEstado)
     .filter(n => filtroResponsabilidad === 'todos' || n.responsabilidad === filtroResponsabilidad)
     .filter(n => !busqueda ||
@@ -60,7 +66,7 @@ export default function NovedadesPage() {
 
   const handleEstado = async (id: string, estado: string) => {
     await supabase.from('novedades').update({ estado, updated_at: new Date().toISOString() }).eq('id', id)
-    setNovedades(prev => prev.map(n => n.id === id ? { ...n, estado } : n))
+    fetchTodo()
   }
 
   const handleLogout = async () => {
@@ -89,28 +95,65 @@ export default function NovedadesPage() {
           </div>
         </div>
 
-        {/* Stats */}
+        {/* Stats — siempre sobre el total real */}
         <div className="stats-grid">
-          {Object.entries(ESTADOS).map(([key, val]) => (
-            <div key={key} className={`stat-card ${filtroEstado !== 'todos' && filtroEstado !== key ? 'dimmed' : ''}`}
-              style={{ borderLeft: `4px solid ${val.color}` }}
-              onClick={() => setFiltroEstado(filtroEstado === key ? 'todos' : key)}>
-              <p className="stat-label">{val.label}</p>
-              <p className="stat-value">{novedades.filter(n => n.estado === key).length}</p>
-            </div>
-          ))}
+          {Object.entries(ESTADOS).map(([key, val]) => {
+            const count = key === 'resuelto'
+              ? resueltas.length
+              : novedades.filter(n => n.estado === key).length
+            return (
+              <div key={key}
+                className={`stat-card ${filtroEstado !== 'todos' && filtroEstado !== key ? 'dimmed' : ''}`}
+                style={{ borderLeft: `4px solid ${val.color}` }}
+                onClick={() => {
+                  if (key === 'resuelto') {
+                    setVerResueltas(true)
+                    setFiltroEstado('todos')
+                  } else {
+                    setVerResueltas(false)
+                    setFiltroEstado(filtroEstado === key ? 'todos' : key)
+                  }
+                }}>
+                <p className="stat-label">{val.label}</p>
+                <p className="stat-value">{count}</p>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Toggle activas / resueltas */}
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', alignItems: 'center' }}>
+          <button
+            onClick={() => { setVerResueltas(false); setFiltroEstado('todos') }}
+            style={{
+              background: !verResueltas ? '#7c3aed' : '#1f2937',
+              color: '#fff', border: 'none', borderRadius: '0.5rem',
+              padding: '0.375rem 0.875rem', fontSize: '0.8rem', cursor: 'pointer', fontWeight: !verResueltas ? 600 : 400,
+            }}>
+            Activas ({novedades.length})
+          </button>
+          <button
+            onClick={() => { setVerResueltas(true); setFiltroEstado('todos') }}
+            style={{
+              background: verResueltas ? '#16a34a' : '#1f2937',
+              color: '#fff', border: 'none', borderRadius: '0.5rem',
+              padding: '0.375rem 0.875rem', fontSize: '0.8rem', cursor: 'pointer', fontWeight: verResueltas ? 600 : 400,
+            }}>
+            Resueltas ({resueltas.length})
+          </button>
         </div>
 
         {/* Filtros */}
         <div className="filters">
           <input className="filter-search" placeholder="Buscar orden o cliente..." value={busqueda} onChange={e => setBusqueda(e.target.value)} />
-          <select className="filter-select" value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
-            <option value="todos">Todos</option>
-            <option value="nuevo">Nuevo</option>
-            <option value="en_gestion">En gestión</option>
-            <option value="en_espera">En espera</option>
-            <option value="resuelto">Resuelto</option>
-          </select>
+          {!verResueltas && (
+            <select className="filter-select" value={filtroEstado} onChange={e => setFiltroEstado(e.target.value)}>
+              <option value="todos">Todos</option>
+              <option value="nuevo">Nuevo</option>
+              <option value="en_gestion">En gestión</option>
+              <option value="en_espera">En espera</option>
+            </select>
+          )}
           <select className="filter-select" value={filtroResponsabilidad} onChange={e => setFiltroResponsabilidad(e.target.value)}>
             <option value="todos">Toda resp.</option>
             <option value="nuestra">Nuestra</option>
@@ -118,11 +161,13 @@ export default function NovedadesPage() {
           </select>
         </div>
 
-        {/* Tabla desktop */}
+        {/* Lista */}
         {loading ? (
           <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>Cargando...</div>
         ) : novedadesFiltradas.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>No hay novedades</div>
+          <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
+            {verResueltas ? 'No hay novedades resueltas' : 'No hay novedades activas'}
+          </div>
         ) : (
           <>
             <div className="table-wrap">
@@ -155,7 +200,6 @@ export default function NovedadesPage() {
               </table>
             </div>
 
-            {/* Cards mobile */}
             <div className="mobile-cards">
               {novedadesFiltradas.map(n => (
                 <div key={n.id + 'm'} className="novedad-card" style={{ borderLeft: `4px solid ${ESTADOS[n.estado]?.color}` }}
@@ -180,10 +224,8 @@ export default function NovedadesPage() {
         )}
       </div>
 
-      {/* FAB mobile */}
       <button className="fab" onClick={() => setShowForm(true)}>+</button>
 
-      {/* Modal */}
       {showForm && (
         <div className="modal-overlay">
           <div className="modal">
