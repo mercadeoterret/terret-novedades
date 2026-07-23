@@ -25,96 +25,21 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: '#030712',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-    }}>
-      <div style={{
-        background: '#111827',
-        padding: '2rem',
-        borderRadius: '1rem',
-        width: '100%',
-        maxWidth: '420px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-      }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, color: '#fff' }}>
-            Terret Novedades
-          </h1>
-          <p style={{ color: '#9ca3af', marginTop: '0.25rem', fontSize: '0.875rem' }}>
-            Gestión interna de casos
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', color: '#9ca3af', marginBottom: '0.25rem' }}>
-              Correo
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="correo@terret.co"
-              style={{
-                width: '100%',
-                background: '#1f2937',
-                color: '#fff',
-                border: '1px solid #374151',
-                borderRadius: '0.5rem',
-                padding: '0.75rem 1rem',
-                fontSize: '0.875rem',
-                outline: 'none',
-              }}
-            />
+    <div className="login-page">
+      <div className="login-card">
+        <h1 className="login-title">Terret Novedades</h1>
+        <p className="login-subtitle">Gestión interna de casos</p>
+        <div className="modal-form">
+          <div className="form-group">
+            <label className="form-label">Correo</label>
+            <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="correo@terret.co" />
           </div>
-
-          <div>
-            <label style={{ display: 'block', fontSize: '0.875rem', color: '#9ca3af', marginBottom: '0.25rem' }}>
-              Contraseña
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleLogin()}
-              placeholder="••••••••"
-              style={{
-                width: '100%',
-                background: '#1f2937',
-                color: '#fff',
-                border: '1px solid #374151',
-                borderRadius: '0.5rem',
-                padding: '0.75rem 1rem',
-                fontSize: '0.875rem',
-                outline: 'none',
-              }}
-            />
+          <div className="form-group">
+            <label className="form-label">Contraseña</label>
+            <input className="input" type="password" value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder="••••••••" />
           </div>
-
-          {error && (
-            <p style={{ color: '#f87171', fontSize: '0.875rem' }}>{error}</p>
-          )}
-
-          <button
-            onClick={handleLogin}
-            disabled={loading}
-            style={{
-              width: '100%',
-              background: loading ? '#6b21a8' : '#7c3aed',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '0.5rem',
-              padding: '0.75rem',
-              fontSize: '0.875rem',
-              fontWeight: 600,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1,
-            }}
-          >
+          {error && <p className="msg-error">{error}</p>}
+          <button className="btn btn-primary btn-lg" onClick={handleLogin} disabled={loading}>
             {loading ? 'Entrando...' : 'Ingresar'}
           </button>
         </div>
