@@ -78,11 +78,11 @@ export default function NovedadesPage() {
           <div className="btn-group">
             <button className="btn btn-secondary" onClick={() => router.push('/reportes')}>
               <span className="btn-text">Reportes</span>
-              <span style={{ display: 'none' }} className="btn-icon-only">📊</span>
+              <span className="btn-icon-only">📊</span>
             </button>
             <button className="btn btn-secondary" onClick={() => router.push('/admin')}>
               <span className="btn-text">Admin</span>
-              <span style={{ display: 'none' }} className="btn-icon-only">⚙️</span>
+              <span className="btn-icon-only">⚙️</span>
             </button>
             <button className="btn btn-primary desktop-only" onClick={() => setShowForm(true)}>+ Nueva novedad</button>
             <button className="btn btn-gray" onClick={handleLogout}>Salir</button>
@@ -129,7 +129,7 @@ export default function NovedadesPage() {
               <table className="table">
                 <thead>
                   <tr>
-                    {['Orden', 'Cliente', 'Tipo', 'Canal', 'Responsabilidad', 'Estado', 'Costo', 'Fecha', 'Estado'].map(h => <th key={h}>{h}</th>)}
+                    {['Orden', 'Cliente', 'Tipo', 'Canal', 'Responsabilidad', 'Estado', 'Costo', 'Fecha', 'Cambiar estado'].map(h => <th key={h}>{h}</th>)}
                   </tr>
                 </thead>
                 <tbody>
@@ -156,7 +156,7 @@ export default function NovedadesPage() {
             </div>
 
             {/* Cards mobile */}
-            <div style={{ display: 'flex', flexDirection: 'column' }} className="mobile-cards">
+            <div className="mobile-cards">
               {novedadesFiltradas.map(n => (
                 <div key={n.id + 'm'} className="novedad-card" style={{ borderLeft: `4px solid ${ESTADOS[n.estado]?.color}` }}
                   onClick={() => router.push(`/novedades/${n.id}`)}>

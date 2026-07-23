@@ -186,3 +186,10 @@ html, body {
 @media (min-width: 769px) {
   .fab { display: none; }
 }
+
+.btn-icon-only { display: none; }
+
+@media (max-width: 768px) {
+  .btn-text { display: none; }
+  .btn-icon-only { display: inline; }
+}
